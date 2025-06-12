@@ -1,5 +1,7 @@
 import numpy as np
 from tensor import Tensor
+from operations.loss import MSELoss
+from module import AutoEncoder
 
 def test_backward():
     # Create input tensors
@@ -33,8 +35,38 @@ def test_backward():
     assert np.allclose(y.grad, expected_dy), "Gradient for y is incorrect"
     print("\nAll gradient tests passed!")
 
-if __name__ == "__main__":
-    test_backward()
+def loss():
+    actual = Tensor(np.array([1.0, 2.0, 3.0]))  # shape: (3,)
+    pred = Tensor(np.array([1.1, 1.9, 3.1]))    # shape: (3,)
+    loss = MSELoss.apply(actual, pred)          # scalar output
+    print(loss)
+
+    # Batch of samples
+    actual = Tensor(np.array([[1.0, 2.0], [3.0, 4.0]]))  # shape: (2, 2)
+    pred = Tensor(np.array([[1.1, 1.9], [2.9, 4.1]]))    # shape: (2, 2)
+    loss = MSELoss.apply(actual, pred)                   # scalar output
+    print(loss)
+
+
+def matt():
+    model = AutoEncoder(5,6)
+    k = Tensor(np.random.rand(5))
+    res = model(k)
+    loss = MSELoss.apply(k,res)
+    print(loss)
+    print("Gradients")
+    print(k.grad)
+    loss.backward()
+    print(res.grad)
+    print(k.grad)
+    params = list(model.parameters())  
+    print([x.data for x in params])
+
+
+
+if __name__ == "__main__":  
+    matt()
+
 
 
     

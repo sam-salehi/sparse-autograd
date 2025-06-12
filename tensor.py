@@ -53,6 +53,10 @@ class Tensor:
                         prev_tensor.grad = grad
                     else:
                         prev_tensor.grad += grad
+                
+    def zero_grad(self):
+        """Reset gradients"""
+        self.grad = np.zeros_like(self.data)
 
     def __add__(self, other: 'Tensor') -> 'Tensor':
         from operations.add import Add
@@ -125,7 +129,6 @@ class Tensor:
     def transpose(self, axes: Optional[Tuple[int, ...]] = None) -> 'Tensor':
         from operations.transpose import Transpose
         return Transpose.apply(self, axes)
-    
 
     @property
     def shape(self) -> Tuple[int, ...]:

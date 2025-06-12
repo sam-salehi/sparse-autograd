@@ -11,7 +11,7 @@ class Multiply(Operation):
         res = op._forward(a.data, b.data)
         return Tensor(res,op)
 
-    def _forward(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    def _forward(self, a: np.ndarray | float , b: np.ndarray | float) -> np.ndarray:
         return a * b
 
     def _backward(self, grad_output: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
