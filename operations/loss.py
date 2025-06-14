@@ -38,6 +38,47 @@ class MSELoss(Operation):
         grad_pred = grad_output * -(2/n) * diff
         
         return grad_actual, grad_pred
+    
+
+class BCE(Operation): # Binary Cross Entropy
+    @staticmethod
+    def apply(actual: Tensor, pred: Tensor):
+        op = BCE()
+        assert pred.ndim == actual.ndim, f"Dimensions must match. Got actual: {actual.ndim}, pred: {pred.ndim}"
+        assert pred.shape == actual.shape, f"Shapes must match. Got actual: {actual.shape}, pred: {pred.shape}"
+        op._prev = (actual, pred)
+        res = op._forward(actual.data, pred.data)
+        return Tensor(res, op)
+
+    def _forward(self, actual: np.ndarray, pred: np.ndarray) -> np.ndarray:
+        # Add small epsilon to avoid log(0)
+        eps = 1e-7
+        pred = np.clip(pred, eps, 1 - eps)
+        
+        # BCE = -[y * log(p) + (1-y) * log(1-p)]
+        bce = -(actual * np.log(pred) + (1 - actual) * np.log(1 - pred))
+        return np.mean(bce)  # Average over all elements
+
+    def _backward(self, grad_output: float):
+        actual_prev = self._prev[0].data
+        pred_prev = self._prev[1].data
+        
+        # Add small epsilon to avoid division by zero
+        eps = 1e-7
+        pred_prev = np.clip(pred_prev, eps, 1 - eps)
+        
+        # For BCE loss:
+        # dL/dy_true = -[log(p) - log(1-p)]
+        # dL/dy_pred = -[y/p - (1-y)/(1-p)]
+        n = actual_prev.size
+        
+        # grad_output gets broadcasted for input shape
+        grad_actual = grad_output * (-np.log(pred_prev) + np.log(1 - pred_prev)) / n
+        grad_pred = grad_output * (-actual_prev/pred_prev + (1-actual_prev)/(1-pred_prev)) / n
+        
+        return grad_actual, grad_pred
+
+
 
 
 class KLDiv(Operation):

@@ -1,4 +1,4 @@
-from operations.loss import MSELoss, KLDiv
+from operations.loss import MSELoss, KLDiv, BCE
 from operations.tanh import Tanh
 from operations.sigmoid import Sigmoid
 from optim import GD, SGD
@@ -30,15 +30,13 @@ H2_DIM = 64
 Z_DIM = 32
 HIDDEN_DIM = 32
 INITIAL_LR = 0.01
-FINAL_LR = 0.001
+FINAL_LR = 0.01
 
 model = BigAutoEncoder(INPUT_DIM, H_DIM,H2_DIM,Z_DIM)
 optimizer = SGD(model.parameters(), lr=INITIAL_LR)
 # TODO train with batches and gradient descent instead
 
-
-
-sparsity = 0.05  # desired average activation
+sparsity = 0.10 # desired average activation
 beta = 0.1       # weight for sparsity penalty
 
 # should probably just add more none linearity.
@@ -78,7 +76,7 @@ for epoch in range(EPOCHS):
         
         z, output = gen(x)
         # Compute losses
-        recon_loss = MSELoss.apply(x, output)
+        recon_loss = BCE.apply(x, output)
         
         total_loss = recon_loss
         if PENALTY:
@@ -99,9 +97,11 @@ for epoch in range(EPOCHS):
         
         model.zero_grad()
         epoch_loss += total_loss.data
+        mean_activation = np.mean(z.data)
+
     avg_loss = epoch_loss / SAMPLE_COUNT 
     losses.append(avg_loss)
-    print(f"Epoch {epoch+1}/{EPOCHS}, Loss: {avg_loss:.4f}, Learning Rate: {current_lr:.6f}")
+    print(f"Epoch {epoch+1}/{EPOCHS}, Loss: {avg_loss:.4f}, Learning Rate: {current_lr:.6f}, Avg Hidden Activation: {mean_activation:.4f}")
 
 
 plt.plot(losses)
