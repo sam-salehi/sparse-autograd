@@ -16,6 +16,8 @@ class Tensor:
     def __str__(self) -> str:
         return str(self.data)
 
+
+
     def _build_topo(self) -> List['Tensor']: 
         """Build topological ordering of tensors in the computation graph. (DFS topological sorting)"""
         topo: List['Tensor'] = []
@@ -35,7 +37,7 @@ class Tensor:
     def backward(self) -> None:
         """Compute gradients for all tensors in the computation graph using topological sorting."""
         # Initialize gradient of the output tensor
-        if self.grad  == None:
+        if self.grad is None:
             self.grad = np.ones_like(self.data)
         
         # Get topological ordering of tensors
@@ -44,16 +46,18 @@ class Tensor:
         # Compute gradients in reverse topological order
         for tensor in reversed(topo):
             if tensor._op is not None:
-                grads: Union[np.ndarray, Tuple[np.ndarray, ...]] = tensor._op._backward(tensor.grad)
+                grads = tensor._op._backward(tensor.grad)
                 if not isinstance(grads, tuple):
                     grads = (grads,)
                 
                 for prev_tensor, grad in zip(tensor._op._prev, grads):
-                    if prev_tensor.grad is None: # gradient is not yet set.
+                    if prev_tensor.grad is None:
                         prev_tensor.grad = grad
                     else:
                         prev_tensor.grad += grad
-                
+            # No else clause needed - leaf nodes (parameters) will accumulate gradients
+            # from their children in the computation graph
+
     def zero_grad(self):
         """Reset gradients"""
         self.grad = np.zeros_like(self.data)

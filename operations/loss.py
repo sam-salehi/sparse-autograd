@@ -56,7 +56,7 @@ class KLDiv(Operation):
         # Compute mean activation per hidden unit (axis=0: batch dimension)
         self.rho_hat = np.mean(activations, axis=0)
         rho = self.sparsity
-        rho_hat = self.rho_hat
+        rho_hat = np.clip(self.rho_hat, 1e-8, 1 - 1e-8)
         # Add small epsilon for numerical stability
         eps = 1e-8
         kl = rho * np.log((rho + eps) / (rho_hat + eps)) + \

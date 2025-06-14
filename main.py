@@ -1,6 +1,7 @@
 import numpy as np
 from tensor import Tensor
 from operations.loss import MSELoss
+from operations.sum import Sum
 from module import AutoEncoder
 
 def test_backward():
@@ -63,9 +64,16 @@ def matt():
     print([x.data for x in params])
 
 
-
+# play around with gradient here. Try to get whats wrong.
+# make a sample linear model to play around with as well.
 if __name__ == "__main__":  
-    matt()
+    x = Tensor(np.array([3.0,5]))
+    z = Tensor(np.array([3,3]))
+    y = x * z
+    l = Sum.apply(y)
+    print(l)
+    l.backward()
+    print(x.grad)   # Expect 6.0
 
 
 
