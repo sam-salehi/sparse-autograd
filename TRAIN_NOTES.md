@@ -145,3 +145,28 @@ sparsity = 0.10 # desired average activation
 beta = 0.1       # weight for sparsity penalty
 
 
+
+
+# new model branch
+
+# hyper params
+PENALTY = True 
+INPUT_DIM =  28 * 28
+SHOW_GRAD = False
+show_sample = False
+SAMPLE_COUNT = 6000 # ? epoch lowered 
+EPOCHS = 20
+HIDDEN_DIM = 64
+INITIAL_LR = 0.01
+FINAL_LR = 0.001
+
+model = AutoEncoder(INPUT_DIM, HIDDEN_DIM)
+optimizer = ADAM(model.parameters(), lr=INITIAL_LR)
+# TODO train with batches and gradient descent instead
+
+sparsity = 0.10 # desired average activation
+beta = 0.1       # weight for sparsity penalty
+
+
+
+loss = 0.2033

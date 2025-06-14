@@ -1,9 +1,10 @@
 from operations.loss import MSELoss, KLDiv, BCE
 from operations.tanh import Tanh
+from operations.relu import ReLU
 from operations.sigmoid import Sigmoid
-from optim import GD, SGD
+from optim import GD, SGD, ADAM
 from tensor import Tensor
-from module import BigAutoEncoder
+from module import AutoEncoder
 from keras.datasets import mnist
 from matplotlib import pyplot as plt
 
@@ -19,22 +20,22 @@ def get_learning_rate(epoch, total_epochs, initial_lr=0.01, final_lr=0.001):
     return initial_lr - (initial_lr - final_lr) * (epoch / total_epochs)
 
 # hyper params
-PENALTY = True
+PENALTY = True 
 INPUT_DIM =  28 * 28
 SHOW_GRAD = False
 show_sample = False
-SAMPLE_COUNT = 1000
-EPOCHS = 20
-H_DIM = 256
-H2_DIM = 64
-Z_DIM = 32
-HIDDEN_DIM = 32
+SAMPLE_COUNT = 20000 # ? epoch booming.  
+EPOCHS = 30
+HIDDEN_DIM = 64
 INITIAL_LR = 0.01
-FINAL_LR = 0.01
+FINAL_LR = 0.001
+BATCH_SIZE = 512
 
-model = BigAutoEncoder(INPUT_DIM, H_DIM,H2_DIM,Z_DIM)
-optimizer = SGD(model.parameters(), lr=INITIAL_LR)
-# TODO train with batches and gradient descent instead
+
+model = AutoEncoder(INPUT_DIM, HIDDEN_DIM)
+optimizer = ADAM(model.parameters(), lr=INITIAL_LR)
+
+# TODO train with batches.
 
 sparsity = 0.10 # desired average activation
 beta = 0.1       # weight for sparsity penalty
@@ -48,6 +49,7 @@ train = train.astype('float32') / 255.0
 test = test.astype("float32") / 255.0
 
 
+
 if show_sample:
     print(train.shape)
     for i in range(9):
@@ -59,7 +61,7 @@ losses = []
 
 def gen(x): 
     encoded = model.encoder(x)
-    h_out = Sigmoid.apply(encoded)
+    h_out = ReLU.apply(encoded)
     decoded = model.decoder(h_out)
     output = Sigmoid.apply(decoded)
     return h_out, output
@@ -95,7 +97,7 @@ for epoch in range(EPOCHS):
                     print(f"{name}: mean={np.mean(param.grad):.6f}, std={np.std(param.grad):.6f}")
         
         
-        model.zero_grad()
+        model.zero_grad() # TODO confirm grad is 0 after this for all params
         epoch_loss += total_loss.data
         mean_activation = np.mean(z.data)
 
@@ -114,13 +116,13 @@ plt.figure(figsize=(10, 4))
 for i in range(5):  # Show 5 examples
     # Original image
     plt.subplot(2, 5, i + 1)
-    plt.imshow(train[i], cmap='gray') # change train to test.
+    plt.imshow(test[i], cmap='gray') # change train to test.
     plt.title('Original')
     plt.axis('off')
     
     # Reconstructed image
     plt.subplot(2, 5, i + 6)
-    x = Tensor(train[i].flatten())
+    x = Tensor(test[i].flatten())
     z, output = gen(x)
     plt.imshow(output.data.reshape(28, 28), cmap='gray')
     plt.title('Reconstructed')
