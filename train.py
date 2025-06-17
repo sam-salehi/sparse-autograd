@@ -7,6 +7,7 @@ from tensor import Tensor
 from module import AutoEncoder
 from keras.datasets import mnist
 from matplotlib import pyplot as plt
+import time
 
 # virtual phyical environment for exploration of  gradients where you initalize 
 # with a loss sace,
@@ -19,17 +20,23 @@ def get_learning_rate(epoch, total_epochs, initial_lr=0.01, final_lr=0.001):
     """Linear learning rate decay from initial_lr to final_lr"""
     return initial_lr - (initial_lr - final_lr) * (epoch / total_epochs)
 
-# hyper params
-PENALTY = True 
+# constants
 INPUT_DIM =  28 * 28
-SHOW_GRAD = False
-show_sample = False
-SAMPLE_COUNT = 20000 # ? epoch booming.  
+
+# hyper parameters
+PENALTY = True 
+SAMPLE_COUNT = 2000 
 EPOCHS = 30
 HIDDEN_DIM = 64
 INITIAL_LR = 0.01
 FINAL_LR = 0.001
 BATCH_SIZE = 512
+# training analytics
+
+SHOW_GRAD = False
+TRACK_TIME = True
+
+
 
 
 model = AutoEncoder(INPUT_DIM, HIDDEN_DIM)
@@ -48,14 +55,8 @@ beta = 0.1       # weight for sparsity penalty
 train = train.astype('float32') / 255.0
 test = test.astype("float32") / 255.0
 
-
-
-if show_sample:
-    print(train.shape)
-    for i in range(9):
-        plt.subplot(330 + 1 + i)
-        plt.imshow(train[i], cmap=plt.get_cmap('gray'))
-    plt.show()
+if TRACK_TIME:
+    start = time.time()
 
 losses = []
 
@@ -106,6 +107,10 @@ for epoch in range(EPOCHS):
     print(f"Epoch {epoch+1}/{EPOCHS}, Loss: {avg_loss:.4f}, Learning Rate: {current_lr:.6f}, Avg Hidden Activation: {mean_activation:.4f}")
 
 
+if TRACK_TIME:
+    end = time.time()
+    print("Time elapsed: ", end - start)
+
 plt.plot(losses)
 plt.xlabel("Epoch")
 plt.ylabel("Average Loss")
@@ -130,6 +135,8 @@ for i in range(5):  # Show 5 examples
 
 plt.tight_layout()
 plt.show()
+
+
 
 
 

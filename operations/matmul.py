@@ -16,19 +16,27 @@ class MatMul(Operation):
 
     def _backward(self, grad_output: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         a, b = self._prev
-        # Ensure 2D shapes for batch support
-        grad_output_2d = np.atleast_2d(grad_output)
-        a_data_2d = np.atleast_2d(a.data)
+        # allowing 2d shape for batch support. 
         
-        # Gradient w.r.t. input: grad_output @ W.T
-        grad_a = grad_output_2d @ b.data.T  # (batch_size, in_features)
-        # Gradient w.r.t. weights: a.T @ grad_output
-        grad_b = a_data_2d.T @ grad_output_2d  # (in_features, out_features)
+        if b.data.ndim == 1:
+            # a: (m,n)
+            # b: (n,)
+            grad_a = np.outer(grad_output, b.data)  # (m,n)
+            grad_b = a.data.T @ grad_output  # (n,)
+        else:
+            grad_output_2d = np.atleast_2d(grad_output)
+            a_data_2d = np.atleast_2d(a.data)
+            b_data_2d = np.atleast_2d(b.data)
+            grad_a = grad_output_2d @ b_data_2d.T  # (batch_size, in_features)
+            grad_b = a_data_2d.T @ grad_output_2d  # (in_features, out_features)
         
-        # Squeeze if original input was 1D
         if a.data.ndim == 1:
             grad_a = grad_a.squeeze(axis=0)
-        # Do not squeeze grad_b, as it is always 2D
-
         
         return grad_a, grad_b
+    
+
+
+
+# a: [265,12]
+# b: 

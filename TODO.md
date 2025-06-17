@@ -1,12 +1,15 @@
 
 
-##S Steps:
+Batch training setup:
+Setup mat mul
+    - Extend matmul.py to handle multiplication
+    - Make tests of different matrix dimensions to make sure the changes work properly
+    - train on unmodified train.py. Should still work.
+Add batches to training
+    - Just modify train.py
+    - Test to see if anything changes.
 
-1. Find a good dataset to use for reconstruction.
-2. Train on it to see what happens
-3. 
-
-
+And then train on large batch baby.
 
 
 
