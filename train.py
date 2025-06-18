@@ -8,13 +8,12 @@ from module import AutoEncoder
 from keras.datasets import mnist
 from matplotlib import pyplot as plt
 import time
-
-# virtual phyical environment for exploration of  gradients where you initalize 
-# with a loss sace,
-
 import numpy as np
 
- # TODO keep track of each parameters gradients over training 
+#  TODO check adam.
+# TODO check KL formula out
+# 
+# TODO figure out how to save weights. as a later feature.
 
 def get_learning_rate(epoch, total_epochs, initial_lr=0.01, final_lr=0.001):
     """Linear learning rate decay from initial_lr to final_lr"""
@@ -25,12 +24,12 @@ INPUT_DIM =  28 * 28
 
 # hyper parameters
 PENALTY = True 
-SAMPLE_COUNT = 2000 
-EPOCHS = 30
+SAMPLE_COUNT = 60000
+EPOCHS = 50
 HIDDEN_DIM = 64
 INITIAL_LR = 0.01
 FINAL_LR = 0.001
-BATCH_SIZE = 512
+BATCH_SIZE = 32  # Reduced batch size for better memory management
 # training analytics
 
 SHOW_GRAD = False
@@ -39,10 +38,10 @@ TRACK_TIME = True
 
 
 
+
 model = AutoEncoder(INPUT_DIM, HIDDEN_DIM)
 optimizer = ADAM(model.parameters(), lr=INITIAL_LR)
 
-# TODO train with batches.
 
 sparsity = 0.10 # desired average activation
 beta = 0.1       # weight for sparsity penalty
@@ -67,6 +66,11 @@ def gen(x):
     output = Sigmoid.apply(decoded)
     return h_out, output
 
+def get_batch(data, batch_idx, batch_size):
+    """Get a batch of data"""
+    start_idx = batch_idx * batch_size
+    end_idx = min(start_idx + batch_size, len(data))
+    return data[start_idx:end_idx]
 
 for epoch in range(EPOCHS):
     # Update learning rate
@@ -74,37 +78,41 @@ for epoch in range(EPOCHS):
     optimizer.lr = current_lr
     
     epoch_loss = 0
-    for i in range(SAMPLE_COUNT):
-        x = Tensor(train[i].flatten())
+    num_batches = (SAMPLE_COUNT + BATCH_SIZE - 1) // BATCH_SIZE  
+    
+    for batch_idx in range(num_batches):
+        batch_data = get_batch(train, batch_idx, BATCH_SIZE)
+        batch_loss = 0
         
-        z, output = gen(x)
-        # Compute losses
-        recon_loss = BCE.apply(x, output)
-        
-        total_loss = recon_loss
-        if PENALTY:
-            kl_loss = KLDiv.apply(z, sparsity)
-            total_loss += Tensor(beta) * kl_loss
-        
-        total_loss.backward()
-        optimizer.step()
+        for x_data in batch_data:
+            x = Tensor(x_data.flatten())
+            z, output = gen(x)
+            
 
+            recon_loss = BCE.apply(x, output)
+            
+            total_loss = recon_loss
+            if PENALTY:
+                kl_loss = KLDiv.apply(z, sparsity)
+                total_loss += Tensor(beta) * kl_loss
+            
+            total_loss.backward()
+            batch_loss += total_loss.data
+        
+        optimizer.step()
+        model.zero_grad()
+        
         if SHOW_GRAD:
             print("\nPost-step gradients:")
-            print(f"Input grad mean: {np.mean(x.grad)}")
-            print(len(model.named_parameters().items()))
             for name, param in model.named_parameters().items():
                 if param.grad is not None:
                     print(f"{name}: mean={np.mean(param.grad):.6f}, std={np.std(param.grad):.6f}")
         
-        
-        model.zero_grad() # TODO confirm grad is 0 after this for all params
-        epoch_loss += total_loss.data
-        mean_activation = np.mean(z.data)
-
-    avg_loss = epoch_loss / SAMPLE_COUNT 
+        epoch_loss += batch_loss / len(batch_data)
+    
+    avg_loss = epoch_loss / num_batches
     losses.append(avg_loss)
-    print(f"Epoch {epoch+1}/{EPOCHS}, Loss: {avg_loss:.4f}, Learning Rate: {current_lr:.6f}, Avg Hidden Activation: {mean_activation:.4f}")
+    print(f"Epoch {epoch+1}/{EPOCHS}, Loss: {avg_loss:.4f}, Learning Rate: {current_lr:.6f}")
 
 
 if TRACK_TIME:
@@ -115,7 +123,6 @@ plt.plot(losses)
 plt.xlabel("Epoch")
 plt.ylabel("Average Loss")
 plt.show()
-
 
 plt.figure(figsize=(10, 4))
 for i in range(5):  # Show 5 examples

@@ -102,19 +102,15 @@ class KLDiv(Operation):
         eps = 1e-8
         kl = rho * np.log((rho + eps) / (rho_hat + eps)) + \
              (1 - rho) * np.log((1 - rho + eps) / (1 - rho_hat + eps))
-        return np.sum(kl)  # sum over all hidden units
+        return np.sum(kl)  
 
     def _backward(self, grad_output: np.ndarray) -> np.ndarray:
-        # grad_output is a scalar (from loss), so we broadcast
         rho = self.sparsity
         rho_hat = self.rho_hat
-        # dKL/d(rho_hat)
         grad = (-rho / (rho_hat + 1e-8)) + ((1 - rho) / (1 - rho_hat + 1e-8))
-        # Since rho_hat = mean(activations), d(rho_hat)/d(activations) = 1/N
         batch_size = self._prev[0].data.shape[0]
         grad = grad / batch_size  # distribute over batch
-        # Broadcast grad to match activations shape
         grad_full = np.ones_like(self._prev[0].data) * grad  # shape: (batch, hidden)
-        return grad_output * grad_full,  # return as tuple
+        return grad_output * grad_full,  # returining as tuple
 
 
