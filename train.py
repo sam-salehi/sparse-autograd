@@ -9,6 +9,8 @@ from keras.datasets import mnist
 from matplotlib import pyplot as plt
 import time
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
+import multiprocessing
 
 #  TODO check adam.
 # TODO check KL formula out
