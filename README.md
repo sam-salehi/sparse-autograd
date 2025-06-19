@@ -128,4 +128,3 @@ The sample image above shows the results of training a sparse autoencoder on MNI
 
 ---
 
-*This project demonstrates the power of understanding deep learning fundamentals by building everything from scratch, from basic tensor operations to complete neural network training pipelines.*
