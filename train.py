@@ -9,13 +9,6 @@ from keras.datasets import mnist
 from matplotlib import pyplot as plt
 import time
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
-import multiprocessing
-
-#  TODO check adam.
-# TODO check KL formula out
-# 
-# TODO figure out how to save weights. as a later feature.
 
 def get_learning_rate(epoch, total_epochs, initial_lr=0.01, final_lr=0.001):
     """Linear learning rate decay from initial_lr to final_lr"""
@@ -31,9 +24,9 @@ EPOCHS = 50
 HIDDEN_DIM = 64
 INITIAL_LR = 0.01
 FINAL_LR = 0.001
-BATCH_SIZE = 32  # Reduced batch size for better memory management
-# training analytics
+BATCH_SIZE = 32  
 
+# training analytics
 SHOW_GRAD = False
 TRACK_TIME = True
 
@@ -48,8 +41,6 @@ optimizer = ADAM(model.parameters(), lr=INITIAL_LR)
 sparsity = 0.10 # desired average activation
 beta = 0.1       # weight for sparsity penalty
 
-# should probably just add more none linearity.
-# do multiple hidden layers instead  of one.
 
 
 (train, _ ), (test, _) = mnist.load_data()
@@ -127,10 +118,10 @@ plt.ylabel("Average Loss")
 plt.show()
 
 plt.figure(figsize=(10, 4))
-for i in range(5):  # Show 5 examples
+for i in range(5):  
     # Original image
     plt.subplot(2, 5, i + 1)
-    plt.imshow(test[i], cmap='gray') # change train to test.
+    plt.imshow(test[i], cmap='gray') 
     plt.title('Original')
     plt.axis('off')
     

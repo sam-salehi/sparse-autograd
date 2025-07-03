@@ -1,6 +1,5 @@
 import numpy as np
 
-#  Gradient Descent implementation
 class GD: 
     def __init__(self,params, lr=0.01):
         self.parameters = params
@@ -15,8 +14,6 @@ class GD:
                 
 
 
-# Sochastic Gradient Descent Implementation 
-# should just be implemented in training pass.
 class SGD:
     def __init__(self, params, lr=0.01):
         self.parameters = params
@@ -25,13 +22,13 @@ class SGD:
     def step(self):
         for param in self.parameters:
             if param.grad is not None:
-                # expectig data not to be batched
+                # expecting data not to be batched
                 # Update using the gradient (no averaging needed for SGD)
                 param.data -= self.lr * param.grad 
 
 
 
-class ADAM: # checkout how adam works
+class ADAM:
     def __init__(self, params, lr=0.001, beta1=0.9, beta2=0.999, eps=1e-8):
         self.parameters = params
         self.lr = lr
@@ -40,8 +37,8 @@ class ADAM: # checkout how adam works
         self.eps = eps      # Small constant for numerical stability
         
         # Initialize moment estimates
-        self.m = []  # First moment (mean)
-        self.v = []  # Second moment (variance)
+        self.m = []  # First moment 
+        self.v = []  # Second moment 
         self.t = 0   # Time step
         
         # Initialize moment estimates for each parameter
@@ -58,10 +55,10 @@ class ADAM: # checkout how adam works
                 
             grad = param.grad
             
-            # Update first moment estimate (momentum)
+            # Update first moment estimate 
             self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * grad
             
-            # Update second moment estimate (RMSprop)
+            # Update second moment estimate 
             self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (grad ** 2)
             
             # Compute bias-corrected moment estimates

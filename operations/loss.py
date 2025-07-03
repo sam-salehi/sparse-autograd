@@ -17,19 +17,12 @@ class MSELoss(Operation):
         return Tensor(res, op)
 
     def _forward(self, actual: np.ndarray, pred: np.ndarray) -> np.ndarray: 
-        # MSE = (1/n) * Σ(y_true - y_pred)²
-        # For batches: returns mean across all elements (both batch and feature dimensions)
-        # Input shapes: (batch_size, ...) for both actual and pred
         return np.mean((actual - pred) ** 2)
 
     def _backward(self, grad_output: float):
         actual_prev = self._prev[0].data
         pred_prev = self._prev[1].data
         
-        # For MSE loss:
-        # dL/dy_true = (2/n) * (y_true - y_pred)
-        # dL/dy_pred = -(2/n) * (y_true - y_pred)
-        # where n is total number of elements (batch_size * feature_size)
         n = actual_prev.size
         diff = actual_prev - pred_prev
         
@@ -67,9 +60,6 @@ class BCE(Operation): # Binary Cross Entropy
         eps = 1e-7
         pred_prev = np.clip(pred_prev, eps, 1 - eps)
         
-        # For BCE loss:
-        # dL/dy_true = -[log(p) - log(1-p)]
-        # dL/dy_pred = -[y/p - (1-y)/(1-p)]
         n = actual_prev.size
         
         # grad_output gets broadcasted for input shape

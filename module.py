@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from tensor import Tensor
 import numpy as np
-from operations.base import Operation
 
 class Module(ABC):
 

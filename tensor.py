@@ -55,8 +55,6 @@ class Tensor:
                         prev_tensor.grad = grad
                     else:
                         prev_tensor.grad += grad
-            # No else clause needed - leaf nodes (parameters) will accumulate gradients
-            # from their children in the computation graph
 
     def zero_grad(self):
         """Reset gradients"""
@@ -125,7 +123,6 @@ class Tensor:
         from operations.mean import Mean
         return Mean.apply(self, axis, keepdims)
 
-    # Reshaping methods
     def reshape(self, *shape: int) -> 'Tensor':
         from operations.reshape import Reshape
         return Reshape.apply(self, *shape)
